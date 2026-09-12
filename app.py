@@ -38,11 +38,36 @@ def create_database():
     conn.close()
 
 
-# ================= HOME PAGE =================
+# ================= PAGES =================
 
 @app.route("/")
 def home():
     return render_template("index.html")
+
+
+@app.route("/about")
+def about():
+    return render_template("about.html")
+
+
+@app.route("/notice")
+def notice():
+    return render_template("notice.html")
+
+
+@app.route("/events")
+def events():
+    return render_template("events.html")
+
+
+@app.route("/register", methods=["GET"])
+def register_page():
+    return render_template("register.html")
+
+
+@app.route("/contact")
+def contact():
+    return render_template("contact.html")
 
 
 # ================= REGISTRATION =================

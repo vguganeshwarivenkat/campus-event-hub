@@ -153,81 +153,98 @@ const events = [
 
 /* ================= LOAD EVENTS ================= */
 
-const container =
-    document.getElementById("eventContainer");
+const container = document.getElementById("eventContainer");
 
-const eventSelect =
-    document.getElementById("event");
+const eventSelect = document.getElementById("event");
 
 
-events.forEach(function(event) {
+/* Load event cards only on Events page */
 
-    /* Event card */
+if (container) {
 
-    container.innerHTML += `
+    events.forEach(function(event) {
 
-        <div class="card">
+        container.innerHTML += `
 
-            <h2>
-                ${event.title}
-            </h2>
+            <div class="card">
 
-            <p>
-                🏷 Category:
-                ${event.category}
-            </p>
+                <h2>
+                    ${event.title}
+                </h2>
 
-            <p>
-                ${event.description}
-            </p>
+                <p>
+                    🏷 Category:
+                    ${event.category}
+                </p>
 
-            <button
-                onclick="selectEvent('${event.name}')">
+                <p>
+                    ${event.description}
+                </p>
 
-                Register 🎓
+                <button
+                    onclick="selectEvent('${event.name}')">
 
-            </button>
+                    Register 🎓
 
-        </div>
+                </button>
 
-    `;
+            </div>
 
+        `;
 
-    /* Registration dropdown */
-
-    eventSelect.innerHTML += `
-
-        <option value="${event.name}">
-            ${event.name}
-        </option>
-
-    `;
-
-});
-
-
-/* ================= SCROLL EVENTS ================= */
-
-function scrollEvents() {
-
-    document
-        .getElementById("events")
-        .scrollIntoView({
-            behavior: "smooth"
-        });
+    });
 
 }
 
 
-/* ================= SCROLL REGISTER ================= */
+/* Load dropdown only on Register page */
+
+if (eventSelect) {
+
+    events.forEach(function(event) {
+
+        eventSelect.innerHTML += `
+
+            <option value="${event.name}">
+                ${event.name}
+            </option>
+
+        `;
+
+    });
+
+
+    /* Select event from URL */
+
+    const params = new URLSearchParams(
+        window.location.search
+    );
+
+    const selectedEvent = params.get("event");
+
+    if (selectedEvent) {
+
+        eventSelect.value = selectedEvent;
+
+    }
+
+}
+
+
+/* ================= EXPLORE EVENTS ================= */
+
+function scrollEvents() {
+
+    window.location.href = "/events";
+
+}
+
+
+/* ================= REGISTER ================= */
 
 function scrollToRegister() {
 
-    document
-        .getElementById("register")
-        .scrollIntoView({
-            behavior: "smooth"
-        });
+    window.location.href = "/register";
 
 }
 
@@ -236,86 +253,165 @@ function scrollToRegister() {
 
 function selectEvent(eventName) {
 
-    eventSelect.value = eventName;
-
-    scrollToRegister();
+    window.location.href =
+        "/register?event=" +
+        encodeURIComponent(eventName);
 
 }
+
 
 /* ================= REGISTRATION ================= */
 
 const registrationForm =
     document.getElementById("registrationForm");
 
-registrationForm.addEventListener("submit", async function(event) {
 
-    event.preventDefault();
+if (registrationForm) {
 
-    const data = {
-        name: document.getElementById("name").value.trim(),
-        email: document.getElementById("email").value.trim(),
-        phone: document.getElementById("phone").value.trim(),
-        college: document.getElementById("college").value.trim(),
-        department: document.getElementById("department").value,
-        year: document.getElementById("year").value,
-        gender: document.getElementById("gender").value,
-        student_id: document.getElementById("studentId").value.trim(),
-        event: document.getElementById("event").value,
-        payment: document.getElementById("payment").value,
-        address: document.getElementById("address").value.trim(),
-        message: document.getElementById("message").value.trim()
-    };
+    registrationForm.addEventListener(
+        "submit",
+        async function(event) {
 
-    try {
+            event.preventDefault();
 
-        const response = await fetch("/register", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(data)
-        });
 
-        const result = await response.json();
+            const data = {
 
-        if (result.success) {
+                name:
+                    document.getElementById("name")
+                    .value.trim(),
 
-            document.getElementById("popupName").textContent =
-                data.name;
+                email:
+                    document.getElementById("email")
+                    .value.trim(),
 
-            document.getElementById("popupEvent").textContent =
-                data.event;
+                phone:
+                    document.getElementById("phone")
+                    .value.trim(),
 
-            document
-                .getElementById("successPopup")
-                .classList.add("show");
+                college:
+                    document.getElementById("college")
+                    .value.trim(),
 
-            registrationForm.reset();
+                department:
+                    document.getElementById("department")
+                    .value,
 
-        } else {
+                year:
+                    document.getElementById("year")
+                    .value,
 
-            alert("Registration failed!");
+                gender:
+                    document.getElementById("gender")
+                    .value,
+
+                student_id:
+                    document.getElementById("studentId")
+                    .value.trim(),
+
+                event:
+                    document.getElementById("event")
+                    .value,
+
+                payment:
+                    document.getElementById("payment")
+                    .value,
+
+                address:
+                    document.getElementById("address")
+                    .value.trim(),
+
+                message:
+                    document.getElementById("message")
+                    .value.trim()
+
+            };
+
+
+            try {
+
+                const response = await fetch(
+                    "/register",
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        body: JSON.stringify(data)
+                    }
+                );
+
+
+                const result =
+                    await response.json();
+
+
+                if (result.success) {
+
+                    document.getElementById(
+                        "popupName"
+                    ).textContent = data.name;
+
+
+                    document.getElementById(
+                        "popupEvent"
+                    ).textContent = data.event;
+
+
+                    document.getElementById(
+                        "successPopup"
+                    ).classList.add("show");
+
+
+                    registrationForm.reset();
+
+                }
+
+                else {
+
+                    alert(
+                        "Registration failed!"
+                    );
+
+                }
+
+            }
+
+            catch (error) {
+
+                console.error(
+                    "Backend Error:",
+                    error
+                );
+
+                alert(
+                    "Server connection failed. Please try again."
+                );
+
+            }
 
         }
+    );
 
-    } catch (error) {
-
-        console.error("Backend Error:", error);
-
-        alert("Server connection failed. Please try again.");
-
-    }
-
-});
+}
 
 
 /* ================= CLOSE POPUP ================= */
 
 function closePopup() {
 
-    document
-        .getElementById("successPopup")
-        .classList.remove("show");
+    const popup =
+        document.getElementById("successPopup");
+
+
+    if (popup) {
+
+        popup.classList.remove("show");
+
+    }
 
 }
 
@@ -326,18 +422,22 @@ const cursorGlow =
     document.querySelector(".cursor-glow");
 
 
-document.addEventListener(
-    "mousemove",
-    function(e) {
+if (cursorGlow) {
 
-        cursorGlow.style.left =
-            e.clientX + "px";
+    document.addEventListener(
+        "mousemove",
+        function(e) {
 
-        cursorGlow.style.top =
-            e.clientY + "px";
+            cursorGlow.style.left =
+                e.clientX + "px";
 
-    }
-);
+            cursorGlow.style.top =
+                e.clientY + "px";
+
+        }
+    );
+
+}
 
 
 /* ================= ESC TO CLOSE POPUP ================= */
