@@ -1,7 +1,11 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, session, redirect, url_for
 import sqlite3
 
 app = Flask(__name__)
+app.secret_key = "campus_event_hub_admin_secret_2026"
+
+ADMIN_USERNAME = "admin"
+ADMIN_PASSWORD = "admin123"
 
 
 # ================= DATABASE =================
@@ -69,6 +73,73 @@ def register_page():
 def contact():
     return render_template("contact.html")
 
+    # ================= ADMIN LOGIN =================
+
+@app.route("/admin/login", methods=["GET", "POST"])
+def admin_login():
+
+    if request.method == "POST":
+
+        username = request.form.get("username")
+        password = request.form.get("password")
+
+        if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
+
+            session["admin_logged_in"] = True
+
+            return redirect(url_for("admin_dashboard"))
+
+        return render_template(
+            "admin_login.html",
+            error="Invalid username or password"
+        )
+
+    return render_template("admin_login.html")
+
+# ================= ADMIN DASHBOARD =================
+
+@app.route("/admin/dashboard")
+def admin_dashboard():
+
+    if not session.get("admin_logged_in"):
+        return redirect(url_for("admin_login"))
+
+    conn = get_db()
+
+    registrations = conn.execute("""
+        SELECT * FROM registrations
+        ORDER BY id DESC
+    """).fetchall()
+
+    total_registrations = conn.execute("""
+        SELECT COUNT(*) AS count
+        FROM registrations
+    """).fetchone()["count"]
+
+    event_counts = conn.execute("""
+        SELECT event, COUNT(*) AS count
+        FROM registrations
+        GROUP BY event
+        ORDER BY count DESC
+    """).fetchall()
+
+    conn.close()
+
+    return render_template(
+        "admin_dashboard.html",
+        registrations=registrations,
+        total_registrations=total_registrations,
+        event_counts=event_counts
+    )
+
+    # ================= ADMIN LOGOUT =================
+
+@app.route("/admin/logout")
+def admin_logout():
+
+    session.pop("admin_logged_in", None)
+
+    return redirect(url_for("admin_login"))
 
 # ================= REGISTRATION =================
 
